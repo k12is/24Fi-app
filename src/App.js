@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Web3Modal from 'web3modal';
 import { ethers } from 'ethers';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
-function App() {
+function Home() {
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+
   const connectWallet = async () => {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
-    console.log("Wallet connected:", await signer.getAddress());
+    const address = await signer.getAddress();
+    setWalletAddress(address);
+    setShowModal(true);
+
+    setTimeout(() => {
+      setShowModal(false);
+      navigate('/dashboard');
+    }, 2000);
   };
 
   return (
@@ -89,8 +101,51 @@ function App() {
       >
         Connect to View Loans
       </button>
+
+      {showModal && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#111',
+          padding: '30px 40px',
+          borderRadius: '12px',
+          border: '1px solid #00ffcc',
+          boxShadow: '0 0 30px rgba(0,255,204,0.3)',
+          color: '#00ffcc',
+          fontSize: '16px',
+          zIndex: 10,
+        }}>
+          Wallet Connected!<br/>
+          <span style={{ fontSize: '12px', color: '#aaa' }}>{walletAddress}</span>
+        </div>
+      )}
     </div>
   );
 }
 
+function Dashboard() {
+  return (
+    <div style={{ color: '#fff', fontFamily: 'Poppins, sans-serif', padding: '40px', background: '#111', height: '100vh' }}>
+      <h2>Welcome to the 24Fi Dashboard</h2>
+      <p style={{ marginTop: '20px' }}>
+        🧪 Sample loan listings will appear here soon...
+      </p>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
+  );
+}
+
 export default App;
+
